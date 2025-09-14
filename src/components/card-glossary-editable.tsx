@@ -159,7 +159,7 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
         <div className="whitespace-normal break-words min-w-[150px]">
           <div className="flex items-center gap-2">
             <FiMove
-              className="cursor-move text-gray-400 flex-shrink-0"
+              className="hidden md:block cursor-move text-gray-400 flex-shrink-0"
               size={16}
             />
             <Textarea

@@ -5,7 +5,13 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import { FiChevronUp, FiChevronDown } from "react-icons/fi";
+import {
+  FiChevronUp,
+  FiChevronDown,
+  FiX,
+  FiCheck,
+  FiMove,
+} from "react-icons/fi";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Button } from "./ui/button";
@@ -391,25 +397,42 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    className="px-4 text-sm text-black bg-gray-200 hover:bg-gray-300"
+                    className="hidden md:flex px-4 text-sm text-black bg-gray-200 hover:bg-gray-300"
                     onClick={handleCancelEdit}
                     disabled={isSaving}
                   >
                     Cancelar
                   </Button>
                   <button
-                    className="px-4 text-sm text-white bg-blue-600 rounded hover:bg-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                    className="hidden md:flex px-4 text-sm text-white justify-center items-center bg-blue-600 rounded hover:bg-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
                     onClick={handleSaveGlossary}
                     disabled={isSaving || !hasChanges}
                   >
                     {isSaving ? "Salvando..." : "Salvar Alterações"}
+                  </button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="md:hidden p-2 text-black bg-gray-200 hover:bg-gray-300"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                  >
+                    <FiX className="w-4 h-4" />
+                  </Button>
+                  <button
+                    className="md:hidden p-2 text-white bg-blue-600 rounded hover:bg-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                    onClick={handleSaveGlossary}
+                    disabled={isSaving || !hasChanges}
+                  >
+                    <FiCheck className="w-4 h-4" />
                   </button>
                 </div>
               )}
             </div>
           </div>
         </div>
-        <div className="h-[calc(100vh-320px)] flex-grow max-w-[100%]">
+        <div className="hidden md:block h-[calc(100vh-320px)] flex-grow max-w-[100%]">
           <div className="h-full overflow-auto">
             <table className="w-full text-sm border-collapse">
               {Object.keys(groupedData).length > 0 && (
@@ -506,9 +529,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                           <td
                             colSpan={3}
                             className="px-4 py-3 text-sm text-gray-500"
-                          >
-                            {items.length} indicador(es)
-                          </td>
+                          ></td>
                         </tr>
 
                         {isOpen &&
@@ -546,6 +567,164 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <div className="md:hidden h-[calc(100vh-320px)] flex-grow">
+          <div className="h-full overflow-auto p-4 space-y-4">
+            {Object.keys(groupedData).length > 0 ? (
+              Object.entries(groupedData).map(([fatherId, items]) => {
+                const fatherIdNum = Number.parseInt(fatherId);
+                const isOpen = openGroups[fatherIdNum];
+                const config = categoryConfig[fatherIdNum] || {
+                  bgColor: "bg-gray-50",
+                  color: "text-gray-700",
+                  icon: (
+                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                  ),
+                };
+
+                return (
+                  <div key={fatherId} className="space-y-3">
+                    <div
+                      className={`${config.bgColor} rounded-lg p-4 cursor-pointer border-l-4 border-l-blue-500`}
+                      onClick={() => handleToggleGroup(fatherIdNum)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          {config.icon}
+                          <span className={`font-semibold ${config.color}`}>
+                            {fatherIndicatorNames[fatherIdNum] ||
+                              `Grupo ${fatherId}`}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {isOpen ? (
+                            <FiChevronUp className="text-gray-600" />
+                          ) : (
+                            <FiChevronDown className="text-gray-600" />
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {isOpen && (
+                      <div className="space-y-3 pl-4">
+                        {items.map((item, index) => (
+                          <div
+                            key={item.id}
+                            className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                          >
+                            <div className="space-y-3">
+                              <div>
+                                {isEditMode && (
+                                  <div className="flex justify-center mb-2">
+                                    <div className="cursor-move p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg">
+                                      <FiMove className="w-4 h-4" />
+                                    </div>
+                                  </div>
+                                )}
+                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  Indicador
+                                </label>
+                                <CardGlossaryEditable
+                                  item={item}
+                                  index={index}
+                                  field="indicator"
+                                  meta={
+                                    {
+                                      updateData: handleGlossaryChange,
+                                      isEditMode,
+                                      dreOptions,
+                                      dfcOptions,
+                                      ncgOptions,
+                                      launchOptions,
+                                    } as TableMeta
+                                  }
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  Descrição
+                                </label>
+                                <CardGlossaryEditable
+                                  item={item}
+                                  index={index}
+                                  field="description"
+                                  meta={
+                                    {
+                                      updateData: handleGlossaryChange,
+                                      isEditMode,
+                                      dreOptions,
+                                      dfcOptions,
+                                      ncgOptions,
+                                      launchOptions,
+                                    } as TableMeta
+                                  }
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  Fórmula
+                                </label>
+                                <CardGlossaryEditable
+                                  item={item}
+                                  index={index}
+                                  field="formula"
+                                  meta={
+                                    {
+                                      updateData: handleGlossaryChange,
+                                      isEditMode,
+                                      dreOptions,
+                                      dfcOptions,
+                                      ncgOptions,
+                                      launchOptions,
+                                    } as TableMeta
+                                  }
+                                />
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                  Visualizado em
+                                </label>
+                                <CardGlossaryEditable
+                                  item={item}
+                                  index={index}
+                                  field="viewAs"
+                                  meta={
+                                    {
+                                      updateData: handleGlossaryChange,
+                                      isEditMode,
+                                      dreOptions,
+                                      dfcOptions,
+                                      ncgOptions,
+                                      launchOptions,
+                                    } as TableMeta
+                                  }
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="flex items-center justify-center h-full text-center text-gray-500">
+                {searchValue
+                  ? "Nenhum resultado encontrado para sua busca."
+                  : "Nenhum indicador encontrado - Clique no menu para cadastrar um indicador."}
+              </div>
+            )}
           </div>
         </div>
       </div>

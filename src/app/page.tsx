@@ -205,23 +205,28 @@ export default function FinancialDashboard() {
     <div className="min-h-screen bg-slate-50">
       <div className="bg-white border-b border-slate-200 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-6 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-emerald-600" />
+          <div className="flex items-center justify-between py-4 sm:py-6 gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg flex-shrink-0">
+                <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-600" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900">Início</h1>
-                <p className="text-sm text-slate-600">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl font-bold text-slate-900 truncate">
+                  Início
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">
                   Indicadores de Performance Empresarial
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2 bg-transparent">
+                  <Button
+                    variant="outline"
+                    className="gap-1 sm:gap-2 bg-transparent px-2 sm:px-3"
+                  >
                     <Menu className="h-4 w-4" />
                     <span className="hidden sm:inline">Ações</span>
                   </Button>
