@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, LineChart, X } from "lucide-react";
+import { BarChart3, LineChart } from "lucide-react";
 import {
   BarChart,
   Bar,

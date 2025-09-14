@@ -28,10 +28,10 @@ interface OptionType {
 export type TableMeta = {
   updateData: (rowIndex: number, columnId: string, value: string) => void;
   isEditMode: boolean;
-  dreOptions?: any[];
-  dfcOptions?: any[];
-  ncgOptions?: any[];
-  launchOptions?: any[];
+  dreOptions?: OptionType[];
+  dfcOptions?: OptionType[];
+  ncgOptions?: OptionType[];
+  launchOptions?: OptionType[];
 };
 
 interface CardGlossaryEditableProps {

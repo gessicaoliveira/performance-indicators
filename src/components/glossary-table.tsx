@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import { FiChevronUp, FiChevronDown } from "react-icons/fi";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -62,8 +68,6 @@ const categoryConfig: {
 interface GlossaryTableProps {
   data: GlossaryItem[];
   searchValue?: string;
-  globalFilter?: string;
-  groupId?: string | string[] | undefined;
   isEditMode?: boolean;
   setIsEditMode?: (editMode: boolean) => void;
   onDataChange?: (data: GlossaryItem[]) => void;
@@ -178,8 +182,6 @@ const DraggableIndicatorRow: React.FC<DraggableIndicatorRowProps> = ({
 const GlossaryTable: React.FC<GlossaryTableProps> = ({
   data = [],
   searchValue = "",
-  globalFilter = "",
-  groupId,
   isEditMode = false,
   setIsEditMode,
   onDataChange,
@@ -194,10 +196,10 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
     [key: number]: GlossaryItem[];
   }>({});
 
-  const [dreOptions] = useState<GroupedOption[]>([]);
-  const [dfcOptions] = useState<GroupedOption[]>([]);
-  const [ncgOptions] = useState<GroupedOption[]>([]);
-  const [launchOptions] = useState<GroupedOption[]>([]);
+  const dreOptions: GroupedOption[] = [];
+  const dfcOptions: GroupedOption[] = [];
+  const ncgOptions: GroupedOption[] = [];
+  const launchOptions: GroupedOption[] = [];
 
   const groupDataByFatherIndicator = useCallback((data: GlossaryItem[]) => {
     const grouped: { [key: number]: GlossaryItem[] } = {};
@@ -261,8 +263,19 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
     [isEditMode, originalData]
   );
 
+  const filteredData = useMemo(() => {
+    if (!searchValue) return data;
+
+    return data.filter(
+      (item) =>
+        item.indicator.toLowerCase().includes(searchValue.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchValue.toLowerCase()) ||
+        item.formula.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }, [data, searchValue]);
+
   useEffect(() => {
-    const newData = JSON.parse(JSON.stringify(data));
+    const newData = JSON.parse(JSON.stringify(filteredData));
     setTableData(newData);
 
     const grouped = groupDataByFatherIndicator(newData);
@@ -277,7 +290,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
     if (!isEditMode) {
       setOriginalData(JSON.parse(JSON.stringify(newData)));
     }
-  }, [data, isEditMode, groupDataByFatherIndicator]);
+  }, [filteredData, isEditMode, groupDataByFatherIndicator]);
 
   const handleGlossaryChange = useCallback(
     (rowIndex: number, columnId: string, value: string) => {
@@ -346,7 +359,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
       }
       setIsEditMode?.(false);
       setHasChanges(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao atualizar os indicadores:", error);
       toast.error("Erro ao salvar alterações");
     } finally {
@@ -525,8 +538,9 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                 ) : (
                   <tr>
                     <td colSpan={4} className="h-24 text-center">
-                      Nenhum resultado encontrado - Clique no menu para
-                      cadastrar um indicador.
+                      {searchValue
+                        ? "Nenhum resultado encontrado para sua busca."
+                        : "Nenhum indicador encontrado - Clique no menu para cadastrar um indicador."}
                     </td>
                   </tr>
                 )}
