@@ -1,103 +1,313 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { HistoryTable } from "@/components/history-table";
+import { GlossaryTable } from "@/components/glossary-table";
+import { ChartModal } from "@/components/chart-modal";
+import { Menu, Edit, TrendingUp, Plus } from "lucide-react";
+import { IndicatorSheet } from "@/components/indicator-sheet";
+
+interface ProcessedIndicator {
+  id: number;
+  name: string;
+  description: string;
+  visualizationType: number;
+  fatherIndicator: number;
+  values: { [year: string]: number };
+}
+
+interface GlossaryItem {
+  id: number;
+  indicator: string;
+  description: string;
+  formula: string;
+  viewAs: string;
+  fatherIndicator?: number;
+  formulaId?: number;
+}
+
+const mockIndicators: ProcessedIndicator[] = [
+  {
+    id: 1,
+    name: "Liquidez Corrente",
+    description: "Capacidade de pagamento de curto prazo",
+    visualizationType: 1,
+    fatherIndicator: 1,
+    values: { "2024": 1.5, "2023": 1.3, "2022": 1.2, "2021": 1.1 },
+  },
+  {
+    id: 2,
+    name: "Margem Líquida",
+    description: "Percentual de lucro líquido sobre receita",
+    visualizationType: 3,
+    fatherIndicator: 2,
+    values: { "2024": 15.2, "2023": 12.8, "2022": 10.5, "2021": 8.9 },
+  },
+  {
+    id: 3,
+    name: "ROE",
+    description: "Retorno sobre patrimônio líquido",
+    visualizationType: 3,
+    fatherIndicator: 5,
+    values: { "2024": 18.5, "2023": 16.2, "2022": 14.1, "2021": 12.3 },
+  },
+  {
+    id: 4,
+    name: "Giro do Ativo",
+    description: "Eficiência na utilização dos ativos",
+    visualizationType: 1,
+    fatherIndicator: 3,
+    values: { "2024": 2.1, "2023": 1.9, "2022": 1.8, "2021": 1.7 },
+  },
+  {
+    id: 5,
+    name: "Crescimento da Receita",
+    description: "Taxa de crescimento anual da receita",
+    visualizationType: 3,
+    fatherIndicator: 4,
+    values: { "2024": 25.3, "2023": 18.7, "2022": 15.2, "2021": 12.1 },
+  },
+];
+
+const mockGlossary: GlossaryItem[] = [
+  {
+    id: 1,
+    indicator: "EBITDA / RECEITA OPERACIONAL LIQUIDA",
+    description: "DESCRIÇÃO EBITDA / RECEITA OPERACIONAL LIQUIDA",
+    formula: "EBITDA ÷ Receita Operacional Liquida",
+    viewAs: "Decimal",
+    fatherIndicator: 1,
+    formulaId: 1,
+  },
+  {
+    id: 2,
+    indicator: "EBITDA / DESPESAS ESTRUTURAIS",
+    description: "DESCRIÇÃO",
+    formula: "EBITDA ÷ Despesas Estruturais",
+    viewAs: "Decimal",
+    fatherIndicator: 1,
+    formulaId: 2,
+  },
+  {
+    id: 3,
+    indicator: "RECEITA OPERACIONAL + 100",
+    description: "DESCRIÇÃO RECEITA OPERACIONAL + 100",
+    formula: "Receita Operacional + 100",
+    viewAs: "Monetário",
+    fatherIndicator: 2,
+    formulaId: 3,
+  },
+  {
+    id: 4,
+    indicator: "EBITDA / RECEITA FINANCEIRAS",
+    description: "DESCRIÇÃO DE RECEITA LIQUIDA",
+    formula: "EBITDA ÷ Receitas Financeiras",
+    viewAs: "Monetário",
+    fatherIndicator: 2,
+    formulaId: 4,
+  },
+  {
+    id: 5,
+    indicator: "Giro do Ativo",
+    description: "Eficiência na utilização dos ativos",
+    formula: "Receita Líquida ÷ Ativo Total",
+    viewAs: "Decimal",
+    fatherIndicator: 3,
+    formulaId: 5,
+  },
+  {
+    id: 6,
+    indicator: "Prazo Médio de Recebimento",
+    description: "Tempo médio para receber vendas a prazo",
+    formula: "(Contas a Receber ÷ Receita Líquida) × 365",
+    viewAs: "Decimal",
+    fatherIndicator: 3,
+    formulaId: 6,
+  },
+  {
+    id: 7,
+    indicator: "Crescimento da Receita",
+    description: "Taxa de crescimento anual da receita",
+    formula: "((Receita Atual - Receita Anterior) ÷ Receita Anterior) × 100",
+    viewAs: "Porcentagem",
+    fatherIndicator: 4,
+    formulaId: 7,
+  },
+  {
+    id: 8,
+    indicator: "Valor Patrimonial por Ação",
+    description: "Valor contábil por ação ordinária",
+    formula: "Patrimônio Líquido ÷ Número de Ações",
+    viewAs: "Monetário",
+    fatherIndicator: 4,
+    formulaId: 8,
+  },
+  {
+    id: 9,
+    indicator: "ROE",
+    description: "Mede o retorno obtido sobre o patrimônio líquido investido",
+    formula: "(Lucro Líquido ÷ Patrimônio Líquido) × 100",
+    viewAs: "Porcentagem",
+    fatherIndicator: 5,
+    formulaId: 9,
+  },
+  {
+    id: 10,
+    indicator: "ROA",
+    description: "Retorno sobre os ativos totais da empresa",
+    formula: "(Lucro Líquido ÷ Ativo Total) × 100",
+    viewAs: "Porcentagem",
+    fatherIndicator: 5,
+    formulaId: 10,
+  },
+];
+
+const years = ["2024", "2023", "2022", "2021"];
+
+export default function FinancialDashboard() {
+  const [activeTab, setActiveTab] = useState("history");
+  const [searchValue, setSearchValue] = useState("");
+  const [selectedIndicator, setSelectedIndicator] =
+    useState<ProcessedIndicator | null>(null);
+  const [isChartModalOpen, setIsChartModalOpen] = useState(false);
+  const [glossaryData, setGlossaryData] =
+    useState<GlossaryItem[]>(mockGlossary);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isIndicatorSheetOpen, setIsIndicatorSheetOpen] = useState(false);
+
+  const handleIndicatorSelect = (indicator: ProcessedIndicator) => {
+    setSelectedIndicator(indicator);
+    setIsChartModalOpen(true);
+  };
+
+  const handleGlossaryDataChange = (newData: GlossaryItem[]) => {
+    setGlossaryData(newData);
+  };
+
+  const handleAddIndicator = (newIndicator: Omit<GlossaryItem, "id">) => {
+    const indicator: GlossaryItem = {
+      ...newIndicator,
+      id: Math.max(...glossaryData.map((item) => item.id)) + 1,
+    };
+    setGlossaryData([...glossaryData, indicator]);
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-white border-b border-slate-200 shadow-sm">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-6 gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-100 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-emerald-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">Início</h1>
+                <p className="text-sm text-slate-600">
+                  Indicadores de Performance Empresarial
+                </p>
+              </div>
+            </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2 bg-transparent">
+                    <Menu className="h-4 w-4" />
+                    <span className="hidden sm:inline">Ações</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setIsIndicatorSheetOpen(true)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Cadastrar Indicador
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setActiveTab("glossary");
+                      setIsEditMode(!isEditMode);
+                    }}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    {isEditMode ? "Sair do Modo Edição" : "Editar"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <TabsList className="grid w-full sm:w-fit grid-cols-2 bg-white border border-slate-200">
+              <TabsTrigger
+                value="history"
+                className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+              >
+                Histórico
+              </TabsTrigger>
+              <TabsTrigger
+                value="glossary"
+                className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
+              >
+                Glossário
+              </TabsTrigger>
+            </TabsList>
+
+            {activeTab === "glossary" && (
+              <Input
+                placeholder="Buscar..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="w-full sm:w-80"
+              />
+            )}
+          </div>
+
+          <TabsContent value="history" className="space-y-6">
+            <HistoryTable
+              indicators={mockIndicators}
+              years={years}
+              onIndicatorSelect={handleIndicatorSelect}
+            />
+          </TabsContent>
+
+          <TabsContent value="glossary" className="space-y-6">
+            <GlossaryTable
+              data={glossaryData}
+              searchValue={searchValue}
+              onDataChange={handleGlossaryDataChange}
+              isEditMode={isEditMode}
+              setIsEditMode={setIsEditMode}
+            />
+          </TabsContent>
+        </Tabs>
+
+        <ChartModal
+          isOpen={isChartModalOpen}
+          onClose={() => setIsChartModalOpen(false)}
+          indicator={selectedIndicator}
+        />
+
+        <IndicatorSheet
+          onAddIndicator={handleAddIndicator}
+          open={isIndicatorSheetOpen}
+          onOpenChange={setIsIndicatorSheetOpen}
+        />
+      </div>
     </div>
   );
 }
