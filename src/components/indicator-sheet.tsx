@@ -110,15 +110,17 @@ export function IndicatorSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent className="w-[600px] sm:max-w-[600px] p-6">
+      <SheetContent className="w-full sm:w-[600px] sm:max-w-[600px] p-4 sm:p-6 overflow-y-auto max-h-screen">
         <SheetHeader>
-          <SheetTitle>Cadastrar Indicador</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className="text-lg sm:text-xl">
+            Cadastrar Indicador
+          </SheetTitle>
+          <SheetDescription className="text-sm sm:text-base">
             Preencha os campos abaixo para cadastrar um novo indicador
           </SheetDescription>
         </SheetHeader>
 
-        <div className="px-1">
+        <div className="px-0 sm:px-1">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="indicator" className="text-sm font-medium">
@@ -132,6 +134,7 @@ export function IndicatorSheet({
                   setFormData({ ...formData, indicator: e.target.value })
                 }
                 required
+                className="w-full"
               />
             </div>
 
@@ -148,6 +151,7 @@ export function IndicatorSheet({
                 }
                 rows={3}
                 required
+                className="w-full"
               />
             </div>
 
@@ -162,7 +166,7 @@ export function IndicatorSheet({
                 }
                 required
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent>
@@ -188,9 +192,10 @@ export function IndicatorSheet({
                     setFormData({ ...formData, formula: e.target.value })
                   }
                   rows={2}
+                  className="w-full"
                 />
                 <div className="mt-2 p-3 bg-gray-50 rounded-md border">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 break-words">
                     {formData.formula || "Sua fórmula aparecerá aqui"}
                   </p>
                 </div>
@@ -208,7 +213,7 @@ export function IndicatorSheet({
                 }
                 required
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -221,11 +226,19 @@ export function IndicatorSheet({
               </Select>
             </div>
 
-            <div className="flex justify-end gap-3 pt-6">
-              <Button type="button" variant="outline" onClick={handleCancel}>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+              <Button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto order-1 sm:order-2"
+              >
                 Salvar
               </Button>
             </div>
