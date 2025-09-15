@@ -5,13 +5,7 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import {
-  FiChevronUp,
-  FiChevronDown,
-  FiX,
-  FiCheck,
-  FiMove,
-} from "react-icons/fi";
+import { FiChevronUp, FiChevronDown, FiX, FiMove } from "react-icons/fi";
 import {
   DndProvider,
   useDrag,
@@ -484,10 +478,17 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
     });
     setOpenGroups(initialOpenState);
 
-    if (!isEditMode) {
+    if (isEditMode && originalData.length === 0) {
+      setOriginalData(JSON.parse(JSON.stringify(newData)));
+    } else if (!isEditMode) {
       setOriginalData(JSON.parse(JSON.stringify(newData)));
     }
-  }, [filteredData, isEditMode, groupDataByFatherIndicator]);
+  }, [
+    filteredData,
+    isEditMode,
+    groupDataByFatherIndicator,
+    originalData.length,
+  ]);
 
   const handleGlossaryChange = useCallback(
     (rowIndex: number, columnId: string, value: string) => {
@@ -669,11 +670,11 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                     <FiX className="w-4 h-4" />
                   </Button>
                   <button
-                    className="md:hidden p-2 text-white bg-blue-600 rounded hover:bg-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                    className="md:hidden py-1 px-2 text-white bg-blue-600 rounded hover:bg-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
                     onClick={handleSaveGlossary}
                     disabled={isSaving || !hasChanges}
                   >
-                    <FiCheck className="w-4 h-4" />
+                    Salvar
                   </button>
                 </div>
               )}
