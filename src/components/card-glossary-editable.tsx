@@ -1,6 +1,5 @@
 import type React from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { FiMove } from "react-icons/fi";
 import { Textarea } from "./ui/textarea";
 import {
   Select,
@@ -157,22 +156,16 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
     if (field === "indicator") {
       return (
         <div className="whitespace-normal break-words w-full">
-          <div className="flex flex-col items-center gap-2">
-            <FiMove
-              className="hidden md:block cursor-move text-gray-400 bg-gray-100 p-1 rounded touch-manipulation"
-              size={20}
-            />
-            <Textarea
-              ref={textareaRef}
-              value={currentValue}
-              onChange={handleChange}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-normal text-[#5F5F5F] min-h-[80px] md:min-h-[120px] resize-none"
-              rows={2}
-              tabIndex={tabIndex}
-            />
-          </div>
+          <Textarea
+            ref={textareaRef}
+            value={currentValue}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-normal text-[#5F5F5F] min-h-[80px] md:min-h-[120px] resize-none"
+            rows={2}
+            tabIndex={tabIndex}
+          />
         </div>
       );
     }

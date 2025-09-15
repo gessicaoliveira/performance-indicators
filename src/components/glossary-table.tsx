@@ -149,14 +149,14 @@ const DraggableMobileCard: React.FC<{
       } ${isOver ? "bg-blue-50 border-blue-300" : ""}`}
     >
       <div className="space-y-3">
-        <div>
-          {meta.isEditMode && (
-            <div className="flex justify-center mb-2">
-              <div className="cursor-move p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg touch-manipulation">
-                <FiMove className="w-4 h-4" />
-              </div>
+        {meta.isEditMode && (
+          <div className="flex justify-center mb-2">
+            <div className="cursor-move p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg touch-manipulation">
+              <FiMove className="w-4 h-4" />
             </div>
-          )}
+          </div>
+        )}
+        <div>
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             Indicador
@@ -255,8 +255,15 @@ const DraggableIndicatorRow: React.FC<DraggableIndicatorRowProps> = ({
         index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
       }`}
     >
+      {meta.isEditMode && (
+        <td className="px-4 py-4 text-center w-8">
+          <div className="cursor-move text-gray-400 hover:text-gray-600 flex justify-center">
+            <FiMove className="w-4 h-4" />
+          </div>
+        </td>
+      )}
       <td
-        className={`px-8 py-4 text-sm text-gray-700 border-r border-gray-100 last:border-r-0 ${
+        className={`px-4 py-4 text-sm text-gray-700 border-r border-gray-100 last:border-r-0 ${
           columnWidths.indicator || ""
         }`}
       >
@@ -374,8 +381,8 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
         return;
       }
 
-      const hasAnyChanges = newData.some((row, index) => {
-        const original = originalData[index];
+      const hasAnyChanges = newData.some((row) => {
+        const original = originalData.find((orig) => orig.id === row.id);
         if (!original) return true;
         return Object.keys(row).some((key) => {
           if (key === "id" || key === "formulaId") return false;
@@ -453,8 +460,8 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
   }, [hasChanges, originalData, setIsEditMode]);
 
   const handleSaveGlossary = async () => {
-    const changedItems = tableData.filter((item, index) => {
-      const original = originalData[index];
+    const changedItems = tableData.filter((item) => {
+      const original = originalData.find((orig) => orig.id === item.id);
       if (!original) {
         return true;
       }
@@ -476,7 +483,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
     setIsSaving(true);
     try {
       toast.success(
-        `${changedItems.length} indicador(es) atualizados com sucesso!`
+        `${changedItems.length} indicador(es) atualizado(s) com sucesso!`
       );
       setOriginalData(JSON.parse(JSON.stringify(tableData)));
       if (onDataChange) {
@@ -560,6 +567,11 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
               {Object.keys(groupedData).length > 0 && (
                 <thead className="sticky top-0 bg-white z-20 border-b border-gray-200">
                   <tr className="bg-gradient-to-r from-gray-50 to-slate-50">
+                    {isEditMode && (
+                      <th className="px-2 py-4 w-8">
+                        <div className="w-4 h-4"></div>
+                      </th>
+                    )}
                     <th
                       className={`px-4 py-4 text-left border-r border-gray-100 ${columnWidths.indicator}`}
                     >
@@ -634,6 +646,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                           className={`${config.bgColor} cursor-pointer font-semibold border-b-2 border-gray-200`}
                           onClick={() => handleToggleGroup(fatherIdNum)}
                         >
+                          {isEditMode && <td className="px-2 py-3 w-8"></td>}
                           <td className={`px-4 py-3 ${config.color}`}>
                             <div className="flex items-center gap-2">
                               {config.icon}
