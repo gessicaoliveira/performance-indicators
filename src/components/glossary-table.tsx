@@ -430,9 +430,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
       const newGrouped = groupDataByFatherIndicator(newData);
       setGroupedData(newGrouped);
 
-      setTimeout(() => {
-        detectChanges(newData);
-      }, 0);
+      detectChanges(newData);
 
       return newData;
     });
@@ -504,9 +502,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
           const newGrouped = groupDataByFatherIndicator(newData);
           setGroupedData(newGrouped);
 
-          setTimeout(() => {
-            detectChanges(newData);
-          }, 0);
+          detectChanges(newData);
         }
         return newData;
       });
