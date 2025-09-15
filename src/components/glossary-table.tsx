@@ -12,10 +12,19 @@ import {
   FiCheck,
   FiMove,
 } from "react-icons/fi";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import {
+  DndProvider,
+  useDrag,
+  useDrop,
+  type DragSourceMonitor,
+} from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
-import { MultiBackend, TouchTransition } from "react-dnd-multi-backend";
+import {
+  MultiBackend,
+  TouchTransition,
+  MouseTransition,
+} from "react-dnd-multi-backend";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import CardGlossaryEditable, { type TableMeta } from "./card-glossary-editable";
@@ -25,17 +34,19 @@ const HTML5toTouch = {
     {
       id: "html5",
       backend: HTML5Backend,
-      transition: TouchTransition,
+      transition: MouseTransition,
     },
     {
       id: "touch",
       backend: TouchBackend,
       options: {
-        enableMouseEvents: true,
-        delayTouchStart: 200,
+        enableMouseEvents: false,
+        delayTouchStart: 100,
         delayMouseStart: 0,
-        touchSlop: 5,
+        touchSlop: 10,
         ignoreContextMenu: true,
+        enableHoverOutsideTarget: true,
+        enableKeyboardEvents: false,
       },
       preview: true,
       transition: TouchTransition,
@@ -121,16 +132,26 @@ const DraggableMobileCard: React.FC<{
   onMoveToGroup: (itemId: number, newFatherId: number) => void;
   meta: TableMeta;
 }> = ({ item, index, fatherId, onMoveToGroup, meta }) => {
-  const [{ isDragging }, drag] = useDrag({
+  const [isDragActive, setIsDragActive] = useState(false);
+
+  const [{ isDragging }, drag, dragPreview] = useDrag({
     type: "INDICATOR",
     item: { id: item.id, currentFatherId: fatherId },
-    collect: (monitor) => ({
+    collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    canDrag: () => true,
+    canDrag: () => meta.isEditMode,
   });
 
-  const [{ isOver }, drop] = useDrop({
+  useEffect(() => {
+    if (isDragging) {
+      setIsDragActive(true);
+    } else {
+      setIsDragActive(false);
+    }
+  }, [isDragging]);
+
+  const [{ isOver, canDrop }, drop] = useDrop({
     accept: "INDICATOR",
     drop: (draggedItem: { id: number; currentFatherId: number }) => {
       if (
@@ -142,41 +163,58 @@ const DraggableMobileCard: React.FC<{
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
     }),
   });
 
-  const ref = useRef<HTMLDivElement>(null);
-  drag(drop(ref));
+  const cardRef = useRef<HTMLDivElement>(null);
+  const dragHandleRef = useRef<HTMLDivElement>(null);
+
+  drag(dragHandleRef);
+  drop(cardRef);
+  dragPreview(cardRef);
 
   return (
     <div
-      ref={ref}
+      ref={cardRef}
       className={`bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 ${
-        isDragging ? "opacity-50 scale-95" : ""
-      } ${isOver ? "bg-blue-50 border-blue-300" : ""}`}
-      style={{ touchAction: "none" }}
+        isDragging ? "opacity-50 scale-95 z-50" : ""
+      } ${isOver && canDrop ? "bg-blue-50 border-blue-300 shadow-lg" : ""} ${
+        isDragActive ? "shadow-xl" : ""
+      }`}
+      style={{
+        touchAction: "manipulation",
+        WebkitUserSelect: "none",
+        userSelect: "none",
+      }}
     >
       <div className="space-y-3">
         {meta.isEditMode && (
           <div className="flex justify-center mb-2">
             <div
-              className="cursor-move p-3 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg touch-manipulation select-none"
+              ref={dragHandleRef}
+              className="cursor-move p-3 text-gray-400 hover:text-gray-600 active:text-gray-800 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 rounded-lg touch-manipulation select-none transition-colors"
               style={{
                 touchAction: "none",
                 userSelect: "none",
                 WebkitUserSelect: "none",
-                minHeight: "44px",
-                minWidth: "44px",
+                WebkitTouchCallout: "none",
+                minHeight: "48px",
+                minWidth: "48px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault();
               }}
             >
               <FiMove className="w-5 h-5" />
             </div>
           </div>
         )}
-        <div>
+
+        <div style={{ pointerEvents: isDragActive ? "none" : "auto" }}>
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
             Indicador
@@ -189,7 +227,7 @@ const DraggableMobileCard: React.FC<{
           />
         </div>
 
-        <div>
+        <div style={{ pointerEvents: isDragActive ? "none" : "auto" }}>
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             Descrição
@@ -202,7 +240,7 @@ const DraggableMobileCard: React.FC<{
           />
         </div>
 
-        <div>
+        <div style={{ pointerEvents: isDragActive ? "none" : "auto" }}>
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
             <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
             Fórmula
@@ -215,7 +253,7 @@ const DraggableMobileCard: React.FC<{
           />
         </div>
 
-        <div>
+        <div style={{ pointerEvents: isDragActive ? "none" : "auto" }}>
           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
             Visualizado em
@@ -243,7 +281,7 @@ const DraggableIndicatorRow: React.FC<DraggableIndicatorRowProps> = ({
   const [{ isDragging }, drag] = useDrag({
     type: "INDICATOR",
     item: { id: item.id, currentFatherId: fatherId },
-    collect: (monitor) => ({
+    collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging(),
     }),
   });
@@ -529,6 +567,65 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
     viewAs: "w-[150px] min-w-[100px]",
   };
 
+  const MobileGroupHeader: React.FC<{
+    fatherId: number;
+    config: any;
+    isOpen: boolean;
+    onToggle: () => void;
+    onDrop: (itemId: number, newFatherId: number) => void;
+  }> = ({ fatherId, config, isOpen, onToggle, onDrop }) => {
+    const [{ isOver, canDrop }, drop] = useDrop({
+      accept: "INDICATOR",
+      drop: (draggedItem: { id: number; currentFatherId: number }) => {
+        if (draggedItem.currentFatherId !== fatherId) {
+          onDrop(draggedItem.id, fatherId);
+        }
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
+      }),
+    });
+
+    const headerRef = useRef<HTMLDivElement>(null);
+    drop(headerRef);
+
+    return (
+      <div
+        ref={headerRef}
+        className={`${
+          config.bgColor
+        } rounded-lg p-4 cursor-pointer border-l-4 border-l-blue-500 transition-all ${
+          isOver && canDrop
+            ? "bg-blue-100 border-l-blue-600 shadow-lg scale-105"
+            : ""
+        }`}
+        onClick={onToggle}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {config.icon}
+            <span className={`font-semibold ${config.color}`}>
+              {fatherIndicatorNames[fatherId] || `Grupo ${fatherId}`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {isOver && canDrop && (
+              <div className="text-blue-600 text-sm font-medium">
+                Solte aqui
+              </div>
+            )}
+            {isOpen ? (
+              <FiChevronUp className="text-gray-600" />
+            ) : (
+              <FiChevronDown className="text-gray-600" />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <DndProvider backend={MultiBackend} options={HTML5toTouch}>
       <div className="flex flex-col w-full h-full bg-white rounded-lg shadow-sm border border-gray-200">
@@ -741,27 +838,13 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
 
                 return (
                   <div key={fatherId} className="space-y-3">
-                    <div
-                      className={`${config.bgColor} rounded-lg p-4 cursor-pointer border-l-4 border-l-blue-500`}
-                      onClick={() => handleToggleGroup(fatherIdNum)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {config.icon}
-                          <span className={`font-semibold ${config.color}`}>
-                            {fatherIndicatorNames[fatherIdNum] ||
-                              `Grupo ${fatherId}`}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {isOpen ? (
-                            <FiChevronUp className="text-gray-600" />
-                          ) : (
-                            <FiChevronDown className="text-gray-600" />
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <MobileGroupHeader
+                      fatherId={fatherIdNum}
+                      config={config}
+                      isOpen={isOpen}
+                      onToggle={() => handleToggleGroup(fatherIdNum)}
+                      onDrop={moveItemToGroup}
+                    />
 
                     {isOpen && (
                       <div className="space-y-3 pl-4">
