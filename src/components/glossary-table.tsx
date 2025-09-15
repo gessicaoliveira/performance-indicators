@@ -30,7 +30,13 @@ const HTML5toTouch = {
     {
       id: "touch",
       backend: TouchBackend,
-      options: { enableMouseEvents: true },
+      options: {
+        enableMouseEvents: true,
+        delayTouchStart: 200,
+        delayMouseStart: 0,
+        touchSlop: 5,
+        ignoreContextMenu: true,
+      },
       preview: true,
       transition: TouchTransition,
     },
@@ -121,6 +127,7 @@ const DraggableMobileCard: React.FC<{
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    canDrag: () => true,
   });
 
   const [{ isOver }, drop] = useDrop({
@@ -147,12 +154,25 @@ const DraggableMobileCard: React.FC<{
       className={`bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 ${
         isDragging ? "opacity-50 scale-95" : ""
       } ${isOver ? "bg-blue-50 border-blue-300" : ""}`}
+      style={{ touchAction: "none" }}
     >
       <div className="space-y-3">
         {meta.isEditMode && (
           <div className="flex justify-center mb-2">
-            <div className="cursor-move p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg touch-manipulation">
-              <FiMove className="w-4 h-4" />
+            <div
+              className="cursor-move p-3 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg touch-manipulation select-none"
+              style={{
+                touchAction: "none",
+                userSelect: "none",
+                WebkitUserSelect: "none",
+                minHeight: "44px",
+                minWidth: "44px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <FiMove className="w-5 h-5" />
             </div>
           </div>
         )}
