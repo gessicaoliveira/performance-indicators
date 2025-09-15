@@ -235,7 +235,7 @@ export default function FinancialDashboard() {
                   <DropdownMenuItem
                     onClick={() => setIsIndicatorSheetOpen(true)}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
+                    <Plus className="mr-2 h-4 w-4 hover:text-white" />
                     Cadastrar Indicador
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -244,7 +244,7 @@ export default function FinancialDashboard() {
                       setIsEditMode(!isEditMode);
                     }}
                   >
-                    <Edit className="mr-2 h-4 w-4" />
+                    <Edit className="mr-2 h-4 w-4 hover:text-white" />
                     {isEditMode ? "Sair do Modo Edição" : "Editar"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
