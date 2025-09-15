@@ -77,8 +77,14 @@ const fatherIndicatorNames: { [key: number]: string } = {
   5: "Rentabilidade",
 };
 
+interface CategoryConfig {
+  bgColor: string;
+  color: string;
+  icon: React.JSX.Element;
+}
+
 const categoryConfig: {
-  [key: number]: { bgColor: string; color: string; icon: React.JSX.Element };
+  [key: number]: CategoryConfig;
 } = {
   1: {
     bgColor: "bg-blue-50",
@@ -569,7 +575,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
 
   const MobileGroupHeader: React.FC<{
     fatherId: number;
-    config: any;
+    config: CategoryConfig;
     isOpen: boolean;
     onToggle: () => void;
     onDrop: (itemId: number, newFatherId: number) => void;
