@@ -277,7 +277,7 @@ export default function FinancialDashboard() {
                 placeholder="Buscar..."
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
-                className="w-full sm:w-80"
+                className="w-full sm:w-80 border-gray-300"
               />
             )}
           </div>

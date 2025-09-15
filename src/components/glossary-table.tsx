@@ -14,9 +14,28 @@ import {
 } from "react-icons/fi";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { TouchBackend } from "react-dnd-touch-backend";
+import { MultiBackend, TouchTransition } from "react-dnd-multi-backend";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import CardGlossaryEditable, { type TableMeta } from "./card-glossary-editable";
+
+const HTML5toTouch = {
+  backends: [
+    {
+      id: "html5",
+      backend: HTML5Backend,
+      transition: TouchTransition,
+    },
+    {
+      id: "touch",
+      backend: TouchBackend,
+      options: { enableMouseEvents: true },
+      preview: true,
+      transition: TouchTransition,
+    },
+  ],
+};
 
 interface GlossaryItem {
   id: number;
@@ -89,6 +108,110 @@ interface DraggableIndicatorRowProps {
   columnWidths: { [key: string]: string };
 }
 
+const DraggableMobileCard: React.FC<{
+  item: GlossaryItem;
+  index: number;
+  fatherId: number;
+  onMoveToGroup: (itemId: number, newFatherId: number) => void;
+  meta: TableMeta;
+}> = ({ item, index, fatherId, onMoveToGroup, meta }) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: "INDICATOR",
+    item: { id: item.id, currentFatherId: fatherId },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [{ isOver }, drop] = useDrop({
+    accept: "INDICATOR",
+    drop: (draggedItem: { id: number; currentFatherId: number }) => {
+      if (
+        draggedItem.id !== item.id &&
+        draggedItem.currentFatherId !== fatherId
+      ) {
+        onMoveToGroup(draggedItem.id, fatherId);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  });
+
+  const ref = useRef<HTMLDivElement>(null);
+  drag(drop(ref));
+
+  return (
+    <div
+      ref={ref}
+      className={`bg-white rounded-lg border border-gray-200 p-4 shadow-sm transition-all duration-200 ${
+        isDragging ? "opacity-50 scale-95" : ""
+      } ${isOver ? "bg-blue-50 border-blue-300" : ""}`}
+    >
+      <div className="space-y-3">
+        <div>
+          {meta.isEditMode && (
+            <div className="flex justify-center mb-2">
+              <div className="cursor-move p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg touch-manipulation">
+                <FiMove className="w-4 h-4" />
+              </div>
+            </div>
+          )}
+          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            Indicador
+          </label>
+          <CardGlossaryEditable
+            item={item}
+            index={index}
+            field="indicator"
+            meta={meta}
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            Descrição
+          </label>
+          <CardGlossaryEditable
+            item={item}
+            index={index}
+            field="description"
+            meta={meta}
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+            Fórmula
+          </label>
+          <CardGlossaryEditable
+            item={item}
+            index={index}
+            field="formula"
+            meta={meta}
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            Visualizado em
+          </label>
+          <CardGlossaryEditable
+            item={item}
+            index={index}
+            field="viewAs"
+            meta={meta}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DraggableIndicatorRow: React.FC<DraggableIndicatorRowProps> = ({
   item,
   index,
@@ -126,12 +249,11 @@ const DraggableIndicatorRow: React.FC<DraggableIndicatorRowProps> = ({
   return (
     <tr
       ref={ref}
-      className={`
-        transition-colors duration-150 hover:bg-blue-50/50
-        ${isDragging ? "opacity-50" : ""}
-        ${isOver ? "bg-blue-100" : ""}
-        ${index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}
-      `}
+      className={`transition-colors duration-150 hover:bg-blue-50/50 ${
+        isDragging ? "opacity-50" : ""
+      } ${isOver ? "bg-blue-100" : ""} ${
+        index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+      }`}
     >
       <td
         className={`px-8 py-4 text-sm text-gray-700 border-r border-gray-100 last:border-r-0 ${
@@ -381,7 +503,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
+    <DndProvider backend={MultiBackend} options={HTML5toTouch}>
       <div className="flex flex-col w-full h-full bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-200 rounded-t-lg">
           <div className="px-6 py-4">
@@ -432,7 +554,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
             </div>
           </div>
         </div>
-        <div className="hidden md:block h-[calc(100vh-320px)] flex-grow max-w-[100%]">
+        <div className="hidden md:block md:h-[calc(100vh-320px)] flex-grow max-w-[100%]">
           <div className="h-full overflow-auto">
             <table className="w-full text-sm border-collapse">
               {Object.keys(groupedData).length > 0 && (
@@ -570,8 +692,8 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
           </div>
         </div>
 
-        <div className="md:hidden h-[calc(100vh-320px)] flex-grow">
-          <div className="h-full overflow-auto p-4 space-y-4">
+        <div className="md:hidden flex-grow">
+          <div className="overflow-auto p-4 space-y-4">
             {Object.keys(groupedData).length > 0 ? (
               Object.entries(groupedData).map(([fatherId, items]) => {
                 const fatherIdNum = Number.parseInt(fatherId);
@@ -611,107 +733,23 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                     {isOpen && (
                       <div className="space-y-3 pl-4">
                         {items.map((item, index) => (
-                          <div
+                          <DraggableMobileCard
                             key={item.id}
-                            className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
-                          >
-                            <div className="space-y-3">
-                              <div>
-                                {isEditMode && (
-                                  <div className="flex justify-center mb-2">
-                                    <div className="cursor-move p-2 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg">
-                                      <FiMove className="w-4 h-4" />
-                                    </div>
-                                  </div>
-                                )}
-                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
-                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                  Indicador
-                                </label>
-                                <CardGlossaryEditable
-                                  item={item}
-                                  index={index}
-                                  field="indicator"
-                                  meta={
-                                    {
-                                      updateData: handleGlossaryChange,
-                                      isEditMode,
-                                      dreOptions,
-                                      dfcOptions,
-                                      ncgOptions,
-                                      launchOptions,
-                                    } as TableMeta
-                                  }
-                                />
-                              </div>
-
-                              <div>
-                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
-                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                  Descrição
-                                </label>
-                                <CardGlossaryEditable
-                                  item={item}
-                                  index={index}
-                                  field="description"
-                                  meta={
-                                    {
-                                      updateData: handleGlossaryChange,
-                                      isEditMode,
-                                      dreOptions,
-                                      dfcOptions,
-                                      ncgOptions,
-                                      launchOptions,
-                                    } as TableMeta
-                                  }
-                                />
-                              </div>
-
-                              <div>
-                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
-                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                  Fórmula
-                                </label>
-                                <CardGlossaryEditable
-                                  item={item}
-                                  index={index}
-                                  field="formula"
-                                  meta={
-                                    {
-                                      updateData: handleGlossaryChange,
-                                      isEditMode,
-                                      dreOptions,
-                                      dfcOptions,
-                                      ncgOptions,
-                                      launchOptions,
-                                    } as TableMeta
-                                  }
-                                />
-                              </div>
-
-                              <div>
-                                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
-                                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                  Visualizado em
-                                </label>
-                                <CardGlossaryEditable
-                                  item={item}
-                                  index={index}
-                                  field="viewAs"
-                                  meta={
-                                    {
-                                      updateData: handleGlossaryChange,
-                                      isEditMode,
-                                      dreOptions,
-                                      dfcOptions,
-                                      ncgOptions,
-                                      launchOptions,
-                                    } as TableMeta
-                                  }
-                                />
-                              </div>
-                            </div>
-                          </div>
+                            item={item}
+                            index={index}
+                            fatherId={fatherIdNum}
+                            onMoveToGroup={moveItemToGroup}
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
                         ))}
                       </div>
                     )}

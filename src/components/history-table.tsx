@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   ChevronRight,
@@ -80,17 +78,17 @@ export function HistoryTable({
     if (value === 0) return "0,00";
 
     switch (visualizationType) {
-      case 1: // Decimal
+      case 1:
         return value.toLocaleString("pt-BR", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         });
-      case 2: // Monetário
+      case 2:
         return value.toLocaleString("pt-BR", {
           style: "currency",
           currency: "BRL",
         });
-      case 3: // Porcentagem
+      case 3:
         return `${value.toFixed(2)}%`;
       default:
         return value.toLocaleString("pt-BR", {
@@ -110,7 +108,6 @@ export function HistoryTable({
     setExpandedCategories(newExpanded);
   };
 
-  // Group indicators by category
   const groupedIndicators = indicators.reduce((acc, indicator) => {
     const categoryId = indicator.fatherIndicator;
     if (!acc[categoryId]) {
@@ -145,8 +142,8 @@ export function HistoryTable({
         </div>
       </div>
 
-      <div className="h-[calc(100vh-320px)] flex-grow max-w-[100%]">
-        <div className="h-full overflow-auto">
+      <div className="flex-grow max-w-[100%]">
+        <div className="overflow-auto md:h-[calc(100vh-320px)]">
           <div className="hidden md:grid grid-cols-[2fr_repeat(4,1fr)] gap-4 p-4 bg-slate-100 border-b border-slate-200 font-semibold text-slate-700 text-sm sticky top-0 z-10">
             <div>INDICADORES FINANCEIROS</div>
             {years.map((year) => (

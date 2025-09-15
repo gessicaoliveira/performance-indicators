@@ -120,13 +120,13 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
 
     if (field === "formula") {
       return (
-        <div className="whitespace-normal break-words min-w-[250px]">
+        <div className="whitespace-normal break-words w-full">
           <Textarea
             value={currentValue}
             onChange={handleChange}
             onFocus={handleFocus}
             onBlur={handleBlur}
-            className="w-full px-2 border-b text-sm font-normal text-[#5F5F5F] min-h-[120px]"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-normal text-[#5F5F5F] min-h-[100px] md:min-h-[120px] resize-none"
             rows={3}
             tabIndex={tabIndex}
             placeholder="Digite a fórmula..."
@@ -137,9 +137,9 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
 
     if (field === "viewAs") {
       return (
-        <div className="whitespace-normal break-words min-w-[150px] resize-y">
+        <div className="whitespace-normal break-words w-full">
           <Select value={currentValue} onValueChange={handleSelectChange}>
-            <SelectTrigger className="w-full text-sm">
+            <SelectTrigger className="w-full text-sm h-10">
               <SelectValue placeholder="Selecione..." />
             </SelectTrigger>
             <SelectContent>
@@ -156,11 +156,11 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
 
     if (field === "indicator") {
       return (
-        <div className="whitespace-normal break-words min-w-[150px]">
-          <div className="flex items-center gap-2">
+        <div className="whitespace-normal break-words w-full">
+          <div className="flex flex-col items-center gap-2">
             <FiMove
-              className="hidden md:block cursor-move text-gray-400 flex-shrink-0"
-              size={16}
+              className="hidden md:block cursor-move text-gray-400 bg-gray-100 p-1 rounded touch-manipulation"
+              size={20}
             />
             <Textarea
               ref={textareaRef}
@@ -168,8 +168,8 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
               onChange={handleChange}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              className="w-full px-2 border-b text-sm font-normal text-[#5F5F5F] min-h-[120px]"
-              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-normal text-[#5F5F5F] min-h-[80px] md:min-h-[120px] resize-none"
+              rows={2}
               tabIndex={tabIndex}
             />
           </div>
@@ -178,19 +178,15 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
     }
 
     return (
-      <div className="whitespace-normal break-words min-w-[150px]">
+      <div className="whitespace-normal break-words w-full">
         <Textarea
-          ref={
-            field === ("indicator" as keyof GlossaryItem)
-              ? textareaRef
-              : undefined
-          }
+          ref={textareaRef}
           value={currentValue}
           onChange={handleChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className="w-full px-2 border-b text-sm font-normal text-[#5F5F5F] min-h-[120px]"
-          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm font-normal text-[#5F5F5F] min-h-[80px] md:min-h-[120px] resize-none"
+          rows={2}
           tabIndex={tabIndex}
         />
       </div>
@@ -199,15 +195,17 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
 
   if (field === "formula") {
     return (
-      <div className="whitespace-normal break-words min-w-[200px]">
+      <div className="whitespace-normal break-words w-full">
         <div className="text-sm text-gray-700">{currentValue}</div>
       </div>
     );
   }
 
   return (
-    <div className="whitespace-normal break-words min-w-[150px]">
-      <div className="break-words whitespace-normal">{currentValue}</div>
+    <div className="whitespace-normal break-words w-full">
+      <div className="break-words whitespace-normal text-sm text-gray-700">
+        {currentValue}
+      </div>
     </div>
   );
 };
