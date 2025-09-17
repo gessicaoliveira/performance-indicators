@@ -5,7 +5,13 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import { FiChevronUp, FiChevronDown, FiX, FiMove } from "react-icons/fi";
+import {
+  FiChevronUp,
+  FiChevronDown,
+  FiX,
+  FiCheck,
+  FiMove,
+} from "react-icons/fi";
 import {
   DndProvider,
   useDrag,
@@ -684,7 +690,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
         <div className="hidden md:block md:h-[calc(100vh-320px)] flex-grow max-w-[100%]">
           <div className="h-full overflow-auto">
             <table className="w-full text-sm border-collapse">
-              {Object.keys(groupedData).length > 0 && (
+              {tableData.length > 0 && (
                 <thead className="sticky top-0 bg-white z-20 border-b border-gray-200">
                   <tr className="bg-gradient-to-r from-gray-50 to-slate-50">
                     {isEditMode && (
@@ -748,69 +754,157 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                 </thead>
               )}
               <tbody className="divide-y divide-gray-100">
-                {Object.keys(groupedData).length > 0 ? (
-                  Object.entries(groupedData).map(([fatherId, items]) => {
-                    const fatherIdNum = Number.parseInt(fatherId);
-                    const isOpen = openGroups[fatherIdNum];
-                    const config = categoryConfig[fatherIdNum] || {
-                      bgColor: "bg-gray-50",
-                      color: "text-gray-700",
-                      icon: (
-                        <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                      ),
-                    };
+                {tableData.length > 0 ? (
+                  isEditMode ? (
+                    Object.entries(groupedData).map(([fatherId, items]) => {
+                      const fatherIdNum = Number.parseInt(fatherId);
+                      const isOpen = openGroups[fatherIdNum];
+                      const config = categoryConfig[fatherIdNum] || {
+                        bgColor: "bg-gray-50",
+                        color: "text-gray-700",
+                        icon: (
+                          <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                        ),
+                      };
 
-                    return (
-                      <React.Fragment key={fatherId}>
-                        <tr
-                          className={`${config.bgColor} cursor-pointer font-semibold border-b-2 border-gray-200`}
-                          onClick={() => handleToggleGroup(fatherIdNum)}
+                      return (
+                        <React.Fragment key={fatherId}>
+                          <tr
+                            className={`${config.bgColor} cursor-pointer font-semibold border-b-2 border-gray-200`}
+                            onClick={() => handleToggleGroup(fatherIdNum)}
+                          >
+                            <td className="px-2 py-3 w-8"></td>
+                            <td className={`px-4 py-3 ${config.color}`}>
+                              <div className="flex items-center gap-2">
+                                {config.icon}
+                                <span className="font-semibold">
+                                  {fatherIndicatorNames[fatherIdNum] ||
+                                    `Grupo ${fatherId}`}
+                                </span>
+                                {isOpen ? (
+                                  <FiChevronUp className="ml-auto" />
+                                ) : (
+                                  <FiChevronDown className="ml-auto" />
+                                )}
+                              </div>
+                            </td>
+                            <td
+                              colSpan={3}
+                              className="px-4 py-3 text-sm text-gray-500"
+                            ></td>
+                          </tr>
+
+                          {isOpen &&
+                            items.map((item, index) => (
+                              <DraggableIndicatorRow
+                                key={item.id}
+                                item={item}
+                                index={index}
+                                fatherId={fatherIdNum}
+                                onMoveToGroup={moveItemToGroup}
+                                meta={
+                                  {
+                                    updateData: handleGlossaryChange,
+                                    isEditMode,
+                                    dreOptions,
+                                    dfcOptions,
+                                    ncgOptions,
+                                    launchOptions,
+                                  } as TableMeta
+                                }
+                                columnWidths={columnWidths}
+                              />
+                            ))}
+                        </React.Fragment>
+                      );
+                    })
+                  ) : (
+                    tableData.map((item, index) => (
+                      <tr
+                        key={item.id}
+                        className={`transition-colors duration-150 hover:bg-blue-50/50 ${
+                          index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+                        }`}
+                      >
+                        <td
+                          className={`px-4 py-4 text-sm text-gray-700 border-r border-gray-100 ${columnWidths.indicator}`}
                         >
-                          {isEditMode && <td className="px-2 py-3 w-8"></td>}
-                          <td className={`px-4 py-3 ${config.color}`}>
-                            <div className="flex items-center gap-2">
-                              {config.icon}
-                              <span className="font-semibold">
-                                {fatherIndicatorNames[fatherIdNum] ||
-                                  `Grupo ${fatherId}`}
-                              </span>
-                              {isOpen ? (
-                                <FiChevronUp className="ml-auto" />
-                              ) : (
-                                <FiChevronDown className="ml-auto" />
-                              )}
-                            </div>
-                          </td>
-                          <td
-                            colSpan={3}
-                            className="px-4 py-3 text-sm text-gray-500"
-                          ></td>
-                        </tr>
-
-                        {isOpen &&
-                          items.map((item, index) => (
-                            <DraggableIndicatorRow
-                              key={item.id}
-                              item={item}
-                              index={index}
-                              fatherId={fatherIdNum}
-                              onMoveToGroup={moveItemToGroup}
-                              meta={
-                                {
-                                  updateData: handleGlossaryChange,
-                                  isEditMode,
-                                  dreOptions,
-                                  dfcOptions,
-                                  ncgOptions,
-                                  launchOptions,
-                                } as TableMeta
-                              }
-                              columnWidths={columnWidths}
-                            />
-                          ))}
-                      </React.Fragment>
-                    );
-                  })
+                          <CardGlossaryEditable
+                            item={item}
+                            index={index}
+                            field="indicator"
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
+                        </td>
+                        <td
+                          className={`px-4 py-4 text-sm text-gray-700 border-r border-gray-100 ${columnWidths.description}`}
+                        >
+                          <CardGlossaryEditable
+                            item={item}
+                            index={index}
+                            field="description"
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
+                        </td>
+                        <td
+                          className={`px-4 py-4 text-sm text-gray-700 border-r border-gray-100 ${columnWidths.formula}`}
+                        >
+                          <CardGlossaryEditable
+                            item={item}
+                            index={index}
+                            field="formula"
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
+                        </td>
+                        <td
+                          className={`px-4 py-4 text-sm text-gray-700 ${columnWidths.viewAs}`}
+                        >
+                          <CardGlossaryEditable
+                            item={item}
+                            index={index}
+                            field="viewAs"
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  )
                 ) : (
                   <tr>
                     <td colSpan={4} className="h-24 text-center">
@@ -827,37 +921,72 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
 
         <div className="md:hidden flex-grow">
           <div className="overflow-auto p-4 space-y-4">
-            {Object.keys(groupedData).length > 0 ? (
-              Object.entries(groupedData).map(([fatherId, items]) => {
-                const fatherIdNum = Number.parseInt(fatherId);
-                const isOpen = openGroups[fatherIdNum];
-                const config = categoryConfig[fatherIdNum] || {
-                  bgColor: "bg-gray-50",
-                  color: "text-gray-700",
-                  icon: (
-                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                  ),
-                };
+            {tableData.length > 0 ? (
+              isEditMode ? (
+                Object.entries(groupedData).map(([fatherId, items]) => {
+                  const fatherIdNum = Number.parseInt(fatherId);
+                  const isOpen = openGroups[fatherIdNum];
+                  const config = categoryConfig[fatherIdNum] || {
+                    bgColor: "bg-gray-50",
+                    color: "text-gray-700",
+                    icon: (
+                      <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                    ),
+                  };
 
-                return (
-                  <div key={fatherId} className="space-y-3">
-                    <MobileGroupHeader
-                      fatherId={fatherIdNum}
-                      config={config}
-                      isOpen={isOpen}
-                      onToggle={() => handleToggleGroup(fatherIdNum)}
-                      onDrop={moveItemToGroup}
-                    />
+                  return (
+                    <div key={fatherId} className="space-y-3">
+                      <MobileGroupHeader
+                        fatherId={fatherIdNum}
+                        config={config}
+                        isOpen={isOpen}
+                        onToggle={() => handleToggleGroup(fatherIdNum)}
+                        onDrop={moveItemToGroup}
+                      />
 
-                    {isOpen && (
-                      <div className="space-y-3 pl-4">
-                        {items.map((item, index) => (
-                          <DraggableMobileCard
-                            key={item.id}
+                      {isOpen && (
+                        <div className="space-y-3 pl-4">
+                          {items.map((item, index) => (
+                            <DraggableMobileCard
+                              key={item.id}
+                              item={item}
+                              index={index}
+                              fatherId={fatherIdNum}
+                              onMoveToGroup={moveItemToGroup}
+                              meta={
+                                {
+                                  updateData: handleGlossaryChange,
+                                  isEditMode,
+                                  dreOptions,
+                                  dfcOptions,
+                                  ncgOptions,
+                                  launchOptions,
+                                } as TableMeta
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="space-y-3">
+                  {tableData.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                    >
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            Indicador
+                          </label>
+                          <CardGlossaryEditable
                             item={item}
                             index={index}
-                            fatherId={fatherIdNum}
-                            onMoveToGroup={moveItemToGroup}
+                            field="indicator"
                             meta={
                               {
                                 updateData: handleGlossaryChange,
@@ -869,12 +998,78 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                               } as TableMeta
                             }
                           />
-                        ))}
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            Descrição
+                          </label>
+                          <CardGlossaryEditable
+                            item={item}
+                            index={index}
+                            field="description"
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            Fórmula
+                          </label>
+                          <CardGlossaryEditable
+                            item={item}
+                            index={index}
+                            field="formula"
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
+                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            Visualizado em
+                          </label>
+                          <CardGlossaryEditable
+                            item={item}
+                            index={index}
+                            field="viewAs"
+                            meta={
+                              {
+                                updateData: handleGlossaryChange,
+                                isEditMode,
+                                dreOptions,
+                                dfcOptions,
+                                ncgOptions,
+                                launchOptions,
+                              } as TableMeta
+                            }
+                          />
+                        </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })
+                    </div>
+                  ))}
+                </div>
+              )
             ) : (
               <div className="flex items-center justify-center h-full text-center text-gray-500">
                 {searchValue

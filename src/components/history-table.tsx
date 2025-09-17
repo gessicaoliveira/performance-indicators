@@ -144,10 +144,13 @@ export function HistoryTable({
 
       <div className="flex-grow max-w-[100%]">
         <div className="overflow-auto md:h-[calc(100vh-320px)]">
-          <div className="hidden md:grid grid-cols-[2fr_repeat(4,1fr)] gap-4 p-4 bg-slate-100 border-b border-slate-200 font-semibold text-slate-700 text-sm sticky top-0 z-10">
+          <div className="hidden md:grid grid-cols-[2fr_repeat(4,1fr)] gap-4 p-4 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-slate-200 font-semibold text-gray-600 text-sm sticky top-0 z-10">
             <div>INDICADORES FINANCEIROS</div>
             {years.map((year) => (
-              <div key={year} className="text-center font-bold text-slate-900">
+              <div
+                key={year}
+                className="text-center font-semibold text-gray-600 text-base"
+              >
                 {year}
               </div>
             ))}
@@ -165,7 +168,7 @@ export function HistoryTable({
                 return (
                   <div key={categoryId}>
                     <div
-                      className={`${config.bgColor} ${config.borderColor} border-l-4 cursor-pointer hover:opacity-80 transition-opacity`}
+                      className={`${config.bgColor} cursor-pointer hover:opacity-80 transition-opacity`}
                       onClick={() => toggleCategory(categoryIdNum)}
                     >
                       <div className="p-4">
