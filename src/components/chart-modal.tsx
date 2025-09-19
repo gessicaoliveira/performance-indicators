@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, LineChart } from "lucide-react";
 import {
-  BarChart,
+  BarChart as RechartsBarChart,
   Bar,
   LineChart as RechartsLineChart,
   Line,
@@ -19,6 +19,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "@/contexts/translation-context";
 
 interface ProcessedIndicator {
   id: number;
@@ -37,6 +38,7 @@ interface ChartModalProps {
 
 export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
   const [chartType, setChartType] = useState<"bar" | "line">("bar");
+  const { t } = useTranslation();
 
   if (!indicator) return null;
 
@@ -66,16 +68,92 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
     }
   };
 
+  const getTranslatedIndicatorName = (name: string) => {
+    if (name.startsWith("indicator.") || name.startsWith("glossary.")) {
+      const translated = t(name);
+      return translated !== name
+        ? translated
+        : name.replace(/^(indicator\.|glossary\.)/, "");
+    }
+
+    const indicatorMap: { [key: string]: string } = {
+      "Liquidez Corrente": "indicator.liquidezCorrente",
+      "Margem Líquida": "indicator.margemLiquida",
+      ROE: "indicator.roe",
+      "Giro do Ativo": "indicator.giroAtivo",
+      "Crescimento da Receita": "indicator.crescimentoReceita",
+      "EBITDA / RECEITA OPERACIONAL LIQUIDA": "glossary.ebitdaReceita",
+      "EBITDA / DESPESAS ESTRUTURAIS": "glossary.ebitdaDespesas",
+      "RECEITA OPERACIONAL + 100": "glossary.receitaOperacional",
+      "EBITDA / RECEITA FINANCEIRAS": "glossary.ebitdaFinanceiras",
+      "Prazo Médio de Recebimento": "glossary.prazoRecebimento",
+      "Valor Patrimonial por Ação": "glossary.valorPatrimonial",
+      ROA: "glossary.roa",
+    };
+
+    const translationKey = indicatorMap[name];
+    if (translationKey) {
+      const translated = t(translationKey);
+      return translated !== translationKey ? translated : name;
+    }
+
+    return name;
+  };
+
+  const getTranslatedIndicatorDescription = (description: string) => {
+    if (
+      description.startsWith("description.") ||
+      description.startsWith("glossary.desc.")
+    ) {
+      const translated = t(description);
+      return translated !== description
+        ? translated
+        : description.replace(/^(description\.|glossary\.desc\.)/, "");
+    }
+
+    const descriptionMap: { [key: string]: string } = {
+      "Capacidade de pagamento de curto prazo": "description.liquidezCorrente",
+      "Percentual de lucro líquido sobre receita": "description.margemLiquida",
+      "Retorno sobre patrimônio líquido": "description.roe",
+      "Eficiência na utilização dos ativos": "description.giroAtivo",
+      "Taxa de crescimento anual da receita": "description.crescimentoReceita",
+      "DESCRIÇÃO EBITDA / RECEITA OPERACIONAL LIQUIDA":
+        "glossary.desc.ebitdaReceita",
+      DESCRIÇÃO: "glossary.desc.ebitdaDespesas",
+      "DESCRIÇÃO RECEITA OPERACIONAL + 100": "glossary.desc.receitaOperacional",
+      "DESCRIÇÃO DE RECEITA LIQUIDA": "glossary.desc.ebitdaFinanceiras",
+      "Tempo médio para receber vendas a prazo":
+        "glossary.desc.prazoRecebimento",
+      "Valor contábil por ação ordinária": "glossary.desc.valorPatrimonial",
+      "Mede o retorno obtido sobre o patrimônio líquido investido":
+        "glossary.desc.roe",
+      "Retorno sobre os ativos totais da empresa": "glossary.desc.roa",
+    };
+
+    const translationKey = descriptionMap[description];
+    if (translationKey) {
+      const translated = t(translationKey);
+      return translated !== translationKey ? translated : description;
+    }
+
+    return description;
+  };
+
+  const translatedName = getTranslatedIndicatorName(indicator.name);
+  const translatedDescription = getTranslatedIndicatorDescription(
+    indicator.description
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto rounded-xl overflow-hidden">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div className="flex-1">
             <DialogTitle className="text-xl font-semibold text-slate-900">
-              Análise de {indicator.name}
+              {t("chart.analysisOf")} {translatedName}
             </DialogTitle>
             <p className="text-sm text-slate-600 mt-1">
-              {indicator.description}
+              {translatedDescription}
             </p>
           </div>
         </DialogHeader>
@@ -84,7 +162,7 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-slate-50 rounded-xl">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-700">
-                Tipo de Visualização:
+                {t("chart.visualizationType")}:
               </span>
               <div className="flex gap-1">
                 <Button
@@ -94,7 +172,7 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
                   className="gap-2"
                 >
                   <BarChart3 className="w-4 h-4" />
-                  <span className="hidden sm:inline">Barras</span>
+                  <span className="hidden sm:inline">{t("chart.bars")}</span>
                 </Button>
                 <Button
                   variant={chartType === "line" ? "default" : "outline"}
@@ -103,13 +181,13 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
                   className="gap-2"
                 >
                   <LineChart className="w-4 h-4" />
-                  <span className="hidden sm:inline">Linha</span>
+                  <span className="hidden sm:inline">{t("chart.line")}</span>
                 </Button>
               </div>
             </div>
             <Badge variant="secondary">
               {chartData.length}{" "}
-              {chartData.length === 1 ? "período" : "períodos"}
+              {chartData.length === 1 ? t("chart.period") : t("chart.periods")}
             </Badge>
           </div>
 
@@ -117,7 +195,7 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
             <div className="h-80 sm:h-96">
               <ResponsiveContainer width="100%" height="100%">
                 {chartType === "bar" ? (
-                  <BarChart
+                  <RechartsBarChart
                     data={chartData}
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                   >
@@ -134,7 +212,7 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
                     <Tooltip
                       formatter={(value: number) => [
                         formatValue(value),
-                        indicator.name,
+                        translatedName,
                       ]}
                       labelStyle={{ color: "#1e293b" }}
                       contentStyle={{
@@ -145,7 +223,7 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
                       }}
                     />
                     <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                  </RechartsBarChart>
                 ) : (
                   <RechartsLineChart
                     data={chartData}
@@ -164,7 +242,7 @@ export function ChartModal({ isOpen, onClose, indicator }: ChartModalProps) {
                     <Tooltip
                       formatter={(value: number) => [
                         formatValue(value),
-                        indicator.name,
+                        translatedName,
                       ]}
                       labelStyle={{ color: "#1e293b" }}
                       contentStyle={{

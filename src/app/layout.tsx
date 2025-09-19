@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Toaster } from "sonner";
 import { Suspense } from "react";
 import "./globals.css";
+import { TranslationProvider } from "@/contexts/translation-context";
 
 export const metadata: Metadata = {
   title: "Indicadores de Performance",
@@ -17,10 +18,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className="font-sans antialiased">
-        <Suspense fallback={null}>
-          {children}
-          <Toaster position="top-right" richColors />
-        </Suspense>
+        <TranslationProvider>
+          <Suspense fallback={null}>
+            {children}
+            <Toaster position="top-right" richColors />
+          </Suspense>
+        </TranslationProvider>
       </body>
     </html>
   );

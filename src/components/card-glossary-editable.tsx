@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { useTranslation } from "@/contexts/translation-context";
 
 interface GlossaryItem {
   id: number;
@@ -50,16 +51,58 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
   const [localValue, setLocalValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { t } = useTranslation();
 
   const isEditing = meta.isEditMode;
 
   const options: OptionType[] = [
-    { value: "Decimal", label: "Decimal" },
-    { value: "Monetário", label: "Monetário" },
-    { value: "Porcentagem", label: "Porcentagem" },
+    { value: "viewAs.decimal", label: t("viewAs.decimal") },
+    { value: "viewAs.monetary", label: t("viewAs.monetary") },
+    { value: "viewAs.percentage", label: t("viewAs.percentage") },
   ];
 
-  const currentValue = isActivelyEditing ? localValue : (item[field] as string);
+  const getFormulaTranslationKey = (formula: string): string | null => {
+    const formulaMap: { [key: string]: string } = {
+      "EBITDA ÷ Receita Operacional Liquida": "formula.ebitdaReceita",
+      "EBITDA ÷ Despesas Estruturais": "formula.ebitdaDespesas",
+      "Receita Operacional + 100": "formula.receitaOperacional",
+      "EBITDA ÷ Receitas Financeiras": "formula.ebitdaFinanceiras",
+      "Receita Líquida ÷ Ativo Total": "formula.giroAtivo",
+      "(Contas a Receber ÷ Receita Líquida) × 365": "formula.prazoRecebimento",
+      "((Receita Atual - Receita Anterior) ÷ Receita Anterior) × 100":
+        "formula.crescimentoReceita",
+      "Patrimônio Líquido ÷ Número de Ações": "formula.valorPatrimonial",
+      "(Lucro Líquido ÷ Patrimônio Líquido) × 100": "formula.roe",
+      "(Lucro Líquido ÷ Ativo Total) × 100": "formula.roa",
+    };
+    return formulaMap[formula] || null;
+  };
+
+  const getDisplayValue = (value: string) => {
+    if (field === "formula") {
+      const formulaKey = getFormulaTranslationKey(value);
+      if (formulaKey) {
+        const translation = t(formulaKey);
+        return translation !== formulaKey ? translation : value;
+      }
+      return value;
+    }
+
+    if (
+      value.includes(".") &&
+      (value.startsWith("glossary.") || value.startsWith("viewAs."))
+    ) {
+      const translation = t(value);
+      return translation !== value ? translation : value;
+    }
+
+    return value;
+  };
+
+  const currentValue = isActivelyEditing
+    ? localValue
+    : getDisplayValue(item[field] as string);
+  const displayValue = getDisplayValue(item[field] as string);
 
   useEffect(() => {
     return () => {
@@ -93,7 +136,7 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
 
   const handleFocus = () => {
     setIsActivelyEditing(true);
-    setLocalValue(item[field] as string);
+    setLocalValue(getDisplayValue(item[field] as string));
   };
 
   const handleBlur = () => {
@@ -137,7 +180,10 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
     if (field === "viewAs") {
       return (
         <div className="whitespace-normal break-words w-full">
-          <Select value={currentValue} onValueChange={handleSelectChange}>
+          <Select
+            value={item[field] as string}
+            onValueChange={handleSelectChange}
+          >
             <SelectTrigger className="w-full text-sm h-10">
               <SelectValue placeholder="Selecione..." />
             </SelectTrigger>
@@ -189,7 +235,7 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
   if (field === "formula") {
     return (
       <div className="whitespace-normal break-words w-full">
-        <div className="text-sm text-gray-700">{currentValue}</div>
+        <div className="text-sm text-gray-700">{displayValue}</div>
       </div>
     );
   }
@@ -197,7 +243,7 @@ const CardGlossaryEditable: React.FC<CardGlossaryEditableProps> = ({
   return (
     <div className="whitespace-normal break-words w-full">
       <div className="break-words whitespace-normal text-sm text-gray-700">
-        {currentValue}
+        {displayValue}
       </div>
     </div>
   );

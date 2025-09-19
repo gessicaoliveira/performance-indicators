@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/contexts/translation-context";
 
 interface ProcessedIndicator {
   id: number;
@@ -28,35 +29,35 @@ interface HistoryTableProps {
 
 const categoryConfig = {
   1: {
-    name: "Endividamento/Liquidez",
+    name: "category.endividamento",
     color: "text-blue-700",
     bgColor: "bg-blue-50",
     borderColor: "border-l-blue-500",
     icon: <Target className="w-4 h-4 text-blue-500" />,
   },
   2: {
-    name: "Lucratividade",
+    name: "category.lucratividade",
     color: "text-emerald-700",
     bgColor: "bg-emerald-50",
     borderColor: "border-l-emerald-500",
     icon: <DollarSign className="w-4 h-4 text-emerald-500" />,
   },
   3: {
-    name: "Eficiência Operacional",
+    name: "category.eficiencia",
     color: "text-orange-700",
     bgColor: "bg-orange-50",
     borderColor: "border-l-orange-500",
     icon: <Activity className="w-4 h-4 text-orange-500" />,
   },
   4: {
-    name: "Crescimento e Valor",
+    name: "category.crescimento",
     color: "text-purple-700",
     bgColor: "bg-purple-50",
     borderColor: "border-l-purple-500",
     icon: <TrendingUp className="w-4 h-4 text-purple-500" />,
   },
   5: {
-    name: "Rentabilidade",
+    name: "category.rentabilidade",
     color: "text-red-700",
     bgColor: "bg-red-50",
     borderColor: "border-l-red-500",
@@ -73,6 +74,7 @@ export function HistoryTable({
   const [expandedCategories, setExpandedCategories] = useState<Set<number>>(
     new Set([1, 2, 3, 4, 5])
   );
+  const { t } = useTranslation();
 
   const formatValue = (value: number, visualizationType: number): string => {
     if (value === 0) return "0,00";
@@ -124,7 +126,7 @@ export function HistoryTable({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-slate-700">
-                Mostrar todos os níveis
+                {t("table.showAllLevels")}
               </span>
               <Switch
                 checked={showAllLevels}
@@ -145,7 +147,7 @@ export function HistoryTable({
       <div className="flex-grow max-w-[100%]">
         <div className="overflow-auto md:h-[calc(100vh-320px)]">
           <div className="hidden md:grid grid-cols-[2fr_repeat(4,1fr)] gap-4 p-4 bg-gradient-to-r from-slate-50 to-gray-50 border-b border-slate-200 font-semibold text-gray-600 text-sm sticky top-0 z-10">
-            <div>INDICADORES FINANCEIROS</div>
+            <div>{t("table.financialIndicators")}</div>
             {years.map((year) => (
               <div
                 key={year}
@@ -180,7 +182,7 @@ export function HistoryTable({
                           )}
                           {config.icon}
                           <span className={`font-semibold ${config.color}`}>
-                            {config.name} ({categoryIndicators.length})
+                            {t(config.name)} ({categoryIndicators.length})
                           </span>
                         </div>
                       </div>
@@ -199,10 +201,10 @@ export function HistoryTable({
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <h4 className="font-medium text-slate-900">
-                                    {indicator.name}
+                                    {t(indicator.name)}
                                   </h4>
                                   <p className="text-sm text-slate-600 mt-1">
-                                    {indicator.description}
+                                    {t(indicator.description)}
                                   </p>
                                 </div>
                                 <Button
@@ -240,10 +242,10 @@ export function HistoryTable({
                                   <DollarSign className="w-3 h-3 text-slate-400" />
                                   <div>
                                     <div className="font-medium text-slate-900">
-                                      {indicator.name}
+                                      {t(indicator.name)}
                                     </div>
                                     <div className="text-sm text-slate-600">
-                                      {indicator.description}
+                                      {t(indicator.description)}
                                     </div>
                                   </div>
                                 </div>

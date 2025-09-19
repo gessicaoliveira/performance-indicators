@@ -5,13 +5,7 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import {
-  FiChevronUp,
-  FiChevronDown,
-  FiX,
-  FiCheck,
-  FiMove,
-} from "react-icons/fi";
+import { FiChevronUp, FiChevronDown, FiX, FiMove } from "react-icons/fi";
 import {
   DndProvider,
   useDrag,
@@ -28,6 +22,7 @@ import {
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import CardGlossaryEditable, { type TableMeta } from "./card-glossary-editable";
+import { useTranslation } from "@/contexts/translation-context";
 
 const HTML5toTouch = {
   backends: [
@@ -70,11 +65,11 @@ interface GroupedOption {
 }
 
 const fatherIndicatorNames: { [key: number]: string } = {
-  1: "Endividamento/Liquidez",
-  2: "Lucratividade",
-  3: "Eficiência Operacional",
-  4: "Crescimento e Valor",
-  5: "Rentabilidade",
+  1: "category.endividamento",
+  2: "category.lucratividade",
+  3: "category.eficiencia",
+  4: "category.crescimento",
+  5: "category.rentabilidade",
 };
 
 interface CategoryConfig {
@@ -386,6 +381,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
   onDataChange,
   onHistoryRefresh,
 }) => {
+  const { t } = useTranslation();
   const [tableData, setTableData] = useState<GlossaryItem[]>(data);
   const [originalData, setOriginalData] = useState<GlossaryItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -463,13 +459,23 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
   const filteredData = useMemo(() => {
     if (!searchValue) return data;
 
-    return data.filter(
-      (item) =>
-        item.indicator.toLowerCase().includes(searchValue.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchValue.toLowerCase()) ||
-        item.formula.toLowerCase().includes(searchValue.toLowerCase())
-    );
-  }, [data, searchValue]);
+    return data.filter((item) => {
+      const searchLower = searchValue.toLowerCase();
+
+      const originalMatch =
+        item.indicator.toLowerCase().includes(searchLower) ||
+        item.description.toLowerCase().includes(searchLower) ||
+        item.formula.toLowerCase().includes(searchLower);
+
+      const translatedIndicator = t(item.indicator).toLowerCase();
+      const translatedDescription = t(item.description).toLowerCase();
+      const translatedMatch =
+        translatedIndicator.includes(searchLower) ||
+        translatedDescription.includes(searchLower);
+
+      return originalMatch || translatedMatch;
+    });
+  }, [data, searchValue, t]);
 
   useEffect(() => {
     const newData = JSON.parse(JSON.stringify(filteredData));
@@ -543,15 +549,13 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
     });
 
     if (changedItems.length === 0) {
-      toast.warning("Nenhuma alteração foi detectada.");
+      toast.warning(t("message.noChanges"));
       return;
     }
 
     setIsSaving(true);
     try {
-      toast.success(
-        `${changedItems.length} indicador(es) atualizado(s) com sucesso!`
-      );
+      toast.success(`${changedItems.length} ${t("message.indicatorsUpdated")}`);
       setOriginalData(JSON.parse(JSON.stringify(tableData)));
       if (onDataChange) {
         onDataChange(tableData);
@@ -563,7 +567,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
       setHasChanges(false);
     } catch (error) {
       console.error("Erro ao atualizar os indicadores:", error);
-      toast.error("Erro ao salvar alterações");
+      toast.error(t("message.errorSaving"));
     } finally {
       setIsSaving(false);
     }
@@ -615,13 +619,13 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
           <div className="flex items-center gap-3">
             {config.icon}
             <span className={`font-semibold ${config.color}`}>
-              {fatherIndicatorNames[fatherId] || `Grupo ${fatherId}`}
+              {t(fatherIndicatorNames[fatherId]) || `Grupo ${fatherId}`}
             </span>
           </div>
           <div className="flex items-center gap-2">
             {isOver && canDrop && (
               <div className="text-blue-600 text-sm font-medium">
-                Solte aqui
+                {t("message.dropHere")}
               </div>
             )}
             {isOpen ? (
@@ -644,7 +648,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
                   <div className="text-sm font-bold text-[#494949]">
-                    INDICADORES ({tableData.length})
+                    {t("table.indicators")} ({tableData.length})
                   </div>
                 </div>
               </div>
@@ -656,14 +660,14 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                     onClick={handleCancelEdit}
                     disabled={isSaving}
                   >
-                    Cancelar
+                    {t("button.cancel")}
                   </Button>
                   <button
                     className="hidden md:flex px-4 text-sm text-white justify-center items-center bg-blue-600 rounded hover:bg-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
                     onClick={handleSaveGlossary}
                     disabled={isSaving || !hasChanges}
                   >
-                    {isSaving ? "Salvando..." : "Salvar Alterações"}
+                    {isSaving ? t("button.saving") : t("button.save")}
                   </button>
 
                   <Button
@@ -680,7 +684,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                     onClick={handleSaveGlossary}
                     disabled={isSaving || !hasChanges}
                   >
-                    Salvar
+                    {isSaving ? t("button.edit.saving") : t("button.edit.save")}
                   </button>
                 </div>
               )}
@@ -707,7 +711,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                       >
                         <span className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          Indicador
+                          {t("table.indicator")}
                         </span>
                       </Button>
                     </th>
@@ -720,7 +724,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                       >
                         <span className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Descrição
+                          {t("table.description")}
                         </span>
                       </Button>
                     </th>
@@ -733,7 +737,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                       >
                         <span className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                          Fórmula
+                          {t("table.formula")}
                         </span>
                       </Button>
                     </th>
@@ -746,7 +750,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                       >
                         <span className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                          Visualizado em
+                          {t("table.viewAs")}
                         </span>
                       </Button>
                     </th>
@@ -778,7 +782,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                               <div className="flex items-center gap-2">
                                 {config.icon}
                                 <span className="font-semibold">
-                                  {fatherIndicatorNames[fatherIdNum] ||
+                                  {t(fatherIndicatorNames[fatherIdNum]) ||
                                     `Grupo ${fatherId}`}
                                 </span>
                                 {isOpen ? (
@@ -909,8 +913,8 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                   <tr>
                     <td colSpan={4} className="h-24 text-center">
                       {searchValue
-                        ? "Nenhum resultado encontrado para sua busca."
-                        : "Nenhum indicador encontrado - Clique no menu para cadastrar um indicador."}
+                        ? t("message.noResults")
+                        : t("message.noIndicators")}
                     </td>
                   </tr>
                 )}
@@ -981,7 +985,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                         <div>
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            Indicador
+                            {t("table.indicator")}
                           </label>
                           <CardGlossaryEditable
                             item={item}
@@ -1003,7 +1007,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                         <div>
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            Descrição
+                            {t("table.description")}
                           </label>
                           <CardGlossaryEditable
                             item={item}
@@ -1025,7 +1029,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                         <div>
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                            Fórmula
+                            {t("table.formula")}
                           </label>
                           <CardGlossaryEditable
                             item={item}
@@ -1047,7 +1051,7 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
                         <div>
                           <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-2 mb-1">
                             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            Visualizado em
+                            {t("table.viewAs")}
                           </label>
                           <CardGlossaryEditable
                             item={item}
@@ -1073,8 +1077,8 @@ const GlossaryTable: React.FC<GlossaryTableProps> = ({
             ) : (
               <div className="flex items-center justify-center h-full text-center text-gray-500">
                 {searchValue
-                  ? "Nenhum resultado encontrado para sua busca."
-                  : "Nenhum indicador encontrado - Clique no menu para cadastrar um indicador."}
+                  ? t("message.noResults")
+                  : t("message.noIndicators")}
               </div>
             )}
           </div>

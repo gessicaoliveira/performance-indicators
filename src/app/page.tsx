@@ -15,6 +15,8 @@ import { GlossaryTable } from "@/components/glossary-table";
 import { ChartModal } from "@/components/chart-modal";
 import { Menu, Edit, TrendingUp, Plus } from "lucide-react";
 import { IndicatorSheet } from "@/components/indicator-sheet";
+import { useTranslation } from "@/contexts/translation-context";
+import { LanguageSelector } from "@/components/language-selector";
 
 interface ProcessedIndicator {
   id: number;
@@ -38,40 +40,40 @@ interface GlossaryItem {
 const mockIndicators: ProcessedIndicator[] = [
   {
     id: 1,
-    name: "Liquidez Corrente",
-    description: "Capacidade de pagamento de curto prazo",
+    name: "indicator.liquidezCorrente",
+    description: "description.liquidezCorrente",
     visualizationType: 1,
     fatherIndicator: 1,
     values: { "2024": 1.5, "2023": 1.3, "2022": 1.2, "2021": 1.1 },
   },
   {
     id: 2,
-    name: "Margem Líquida",
-    description: "Percentual de lucro líquido sobre receita",
+    name: "indicator.margemLiquida",
+    description: "description.margemLiquida",
     visualizationType: 3,
     fatherIndicator: 2,
     values: { "2024": 15.2, "2023": 12.8, "2022": 10.5, "2021": 8.9 },
   },
   {
     id: 3,
-    name: "ROE",
-    description: "Retorno sobre patrimônio líquido",
+    name: "indicator.roe",
+    description: "description.roe",
     visualizationType: 3,
     fatherIndicator: 5,
     values: { "2024": 18.5, "2023": 16.2, "2022": 14.1, "2021": 12.3 },
   },
   {
     id: 4,
-    name: "Giro do Ativo",
-    description: "Eficiência na utilização dos ativos",
+    name: "indicator.giroAtivo",
+    description: "description.giroAtivo",
     visualizationType: 1,
     fatherIndicator: 3,
     values: { "2024": 2.1, "2023": 1.9, "2022": 1.8, "2021": 1.7 },
   },
   {
     id: 5,
-    name: "Crescimento da Receita",
-    description: "Taxa de crescimento anual da receita",
+    name: "indicator.crescimentoReceita",
+    description: "description.crescimentoReceita",
     visualizationType: 3,
     fatherIndicator: 4,
     values: { "2024": 25.3, "2023": 18.7, "2022": 15.2, "2021": 12.1 },
@@ -81,91 +83,91 @@ const mockIndicators: ProcessedIndicator[] = [
 const mockGlossary: GlossaryItem[] = [
   {
     id: 1,
-    indicator: "EBITDA / RECEITA OPERACIONAL LIQUIDA",
-    description: "DESCRIÇÃO EBITDA / RECEITA OPERACIONAL LIQUIDA",
+    indicator: "glossary.ebitdaReceita",
+    description: "glossary.desc.ebitdaReceita",
     formula: "EBITDA ÷ Receita Operacional Liquida",
-    viewAs: "Decimal",
+    viewAs: "viewAs.decimal",
     fatherIndicator: 1,
     formulaId: 1,
   },
   {
     id: 2,
-    indicator: "EBITDA / DESPESAS ESTRUTURAIS",
-    description: "DESCRIÇÃO",
+    indicator: "glossary.ebitdaDespesas",
+    description: "glossary.desc.ebitdaDespesas",
     formula: "EBITDA ÷ Despesas Estruturais",
-    viewAs: "Decimal",
+    viewAs: "viewAs.decimal",
     fatherIndicator: 1,
     formulaId: 2,
   },
   {
     id: 3,
-    indicator: "RECEITA OPERACIONAL + 100",
-    description: "DESCRIÇÃO RECEITA OPERACIONAL + 100",
+    indicator: "glossary.receitaOperacional",
+    description: "glossary.desc.receitaOperacional",
     formula: "Receita Operacional + 100",
-    viewAs: "Monetário",
+    viewAs: "viewAs.monetary",
     fatherIndicator: 2,
     formulaId: 3,
   },
   {
     id: 4,
-    indicator: "EBITDA / RECEITA FINANCEIRAS",
-    description: "DESCRIÇÃO DE RECEITA LIQUIDA",
+    indicator: "glossary.ebitdaFinanceiras",
+    description: "glossary.desc.ebitdaFinanceiras",
     formula: "EBITDA ÷ Receitas Financeiras",
-    viewAs: "Monetário",
+    viewAs: "viewAs.monetary",
     fatherIndicator: 2,
     formulaId: 4,
   },
   {
     id: 5,
-    indicator: "Giro do Ativo",
-    description: "Eficiência na utilização dos ativos",
+    indicator: "glossary.giroAtivo",
+    description: "glossary.desc.giroAtivo",
     formula: "Receita Líquida ÷ Ativo Total",
-    viewAs: "Decimal",
+    viewAs: "viewAs.decimal",
     fatherIndicator: 3,
     formulaId: 5,
   },
   {
     id: 6,
-    indicator: "Prazo Médio de Recebimento",
-    description: "Tempo médio para receber vendas a prazo",
+    indicator: "glossary.prazoRecebimento",
+    description: "glossary.desc.prazoRecebimento",
     formula: "(Contas a Receber ÷ Receita Líquida) × 365",
-    viewAs: "Decimal",
+    viewAs: "viewAs.decimal",
     fatherIndicator: 3,
     formulaId: 6,
   },
   {
     id: 7,
-    indicator: "Crescimento da Receita",
-    description: "Taxa de crescimento anual da receita",
+    indicator: "glossary.crescimentoReceita",
+    description: "glossary.desc.crescimentoReceita",
     formula: "((Receita Atual - Receita Anterior) ÷ Receita Anterior) × 100",
-    viewAs: "Porcentagem",
+    viewAs: "viewAs.percentage",
     fatherIndicator: 4,
     formulaId: 7,
   },
   {
     id: 8,
-    indicator: "Valor Patrimonial por Ação",
-    description: "Valor contábil por ação ordinária",
+    indicator: "glossary.valorPatrimonial",
+    description: "glossary.desc.valorPatrimonial",
     formula: "Patrimônio Líquido ÷ Número de Ações",
-    viewAs: "Monetário",
+    viewAs: "viewAs.monetary",
     fatherIndicator: 4,
     formulaId: 8,
   },
   {
     id: 9,
-    indicator: "ROE",
-    description: "Mede o retorno obtido sobre o patrimônio líquido investido",
+    indicator: "glossary.roe",
+    description: "glossary.desc.roe",
     formula: "(Lucro Líquido ÷ Patrimônio Líquido) × 100",
-    viewAs: "Porcentagem",
+    viewAs: "viewAs.percentage",
     fatherIndicator: 5,
     formulaId: 9,
   },
   {
     id: 10,
-    indicator: "ROA",
-    description: "Retorno sobre os ativos totais da empresa",
+    indicator: "glossary.roa",
+    description: "glossary.desc.roa",
     formula: "(Lucro Líquido ÷ Ativo Total) × 100",
-    viewAs: "Porcentagem",
+    viewAs: "viewAs.percentage",
     fatherIndicator: 5,
     formulaId: 10,
   },
@@ -183,6 +185,9 @@ export default function FinancialDashboard() {
     useState<GlossaryItem[]>(mockGlossary);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isIndicatorSheetOpen, setIsIndicatorSheetOpen] = useState(false);
+  const { t, isHydrated } = useTranslation();
+
+  const searchPlaceholder = t("placeholder.search");
 
   const handleIndicatorSelect = (indicator: ProcessedIndicator) => {
     setSelectedIndicator(indicator);
@@ -212,15 +217,19 @@ export default function FinancialDashboard() {
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-lg sm:text-2xl font-bold text-slate-900 truncate">
-                  Início
+                  {isHydrated ? t("header.title") : "Empresa"}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">
-                  Indicadores de Performance Empresarial
+                  {isHydrated
+                    ? t("header.subtitle")
+                    : "Indicadores de Performance Empresarial"}
                 </p>
               </div>
             </div>
 
             <div className="flex gap-2 flex-shrink-0">
+              <LanguageSelector />
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -228,7 +237,9 @@ export default function FinancialDashboard() {
                     className="gap-1 sm:gap-2 bg-transparent px-2 sm:px-3"
                   >
                     <Menu className="h-4 w-4" />
-                    <span className="hidden sm:inline">Ações</span>
+                    <span className="hidden sm:inline">
+                      {isHydrated ? t("header.actions") : "Ações"}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -236,7 +247,7 @@ export default function FinancialDashboard() {
                     onClick={() => setIsIndicatorSheetOpen(true)}
                   >
                     <Plus className="mr-2 h-4 w-4 hover:text-white" />
-                    Cadastrar Indicador
+                    {isHydrated ? t("button.add") : "Cadastrar Indicador"}
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
@@ -245,7 +256,13 @@ export default function FinancialDashboard() {
                     }}
                   >
                     <Edit className="mr-2 h-4 w-4 hover:text-white" />
-                    {isEditMode ? "Sair do Modo Edição" : "Editar"}
+                    {isHydrated
+                      ? isEditMode
+                        ? t("button.cancel")
+                        : t("button.edit")
+                      : isEditMode
+                      ? "Cancelar"
+                      : "Editar"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -262,19 +279,19 @@ export default function FinancialDashboard() {
                 value="history"
                 className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
               >
-                Histórico
+                {isHydrated ? t("tabs.history") : "Histórico"}
               </TabsTrigger>
               <TabsTrigger
                 value="glossary"
                 className="data-[state=active]:bg-emerald-50 data-[state=active]:text-emerald-700"
               >
-                Glossário
+                {isHydrated ? t("tabs.glossary") : "Glossário"}
               </TabsTrigger>
             </TabsList>
 
             {activeTab === "glossary" && (
               <Input
-                placeholder="Buscar..."
+                placeholder={searchPlaceholder}
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 className="w-full sm:w-80 border-gray-300"

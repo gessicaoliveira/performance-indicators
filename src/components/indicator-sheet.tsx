@@ -17,6 +17,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { useTranslation } from "@/contexts/translation-context";
 
 interface GlossaryItem {
   id: number;
@@ -34,25 +35,13 @@ interface IndicatorSheetProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-const categories = [
-  { value: "1", label: "Endividamento/Liquidez" },
-  { value: "2", label: "Lucratividade" },
-  { value: "3", label: "Eficiência Operacional" },
-  { value: "4", label: "Crescimento e Valor" },
-  { value: "5", label: "Rentabilidade" },
-];
-
-const visualizationTypes = [
-  { value: "Decimal", label: "Decimal" },
-  { value: "Monetário", label: "Monetário" },
-  { value: "Porcentagem", label: "Porcentagem" },
-];
-
 export function IndicatorSheet({
   onAddIndicator,
   open,
   onOpenChange,
 }: IndicatorSheetProps) {
+  const { t } = useTranslation();
+
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = onOpenChange || setInternalOpen;
@@ -64,6 +53,20 @@ export function IndicatorSheet({
     formula: "",
     viewAs: "",
   });
+
+  const categories = [
+    { value: "1", label: t("category.endividamento") },
+    { value: "2", label: t("category.lucratividade") },
+    { value: "3", label: t("category.eficiencia") },
+    { value: "4", label: t("category.crescimento") },
+    { value: "5", label: t("category.rentabilidade") },
+  ];
+
+  const visualizationTypes = [
+    { value: "Decimal", label: t("viewAs.decimal") },
+    { value: "Monetário", label: t("viewAs.monetary") },
+    { value: "Porcentagem", label: t("viewAs.percentage") },
+  ];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,10 +116,10 @@ export function IndicatorSheet({
       <SheetContent className="w-full sm:w-[600px] sm:max-w-[600px] p-4 sm:p-6 overflow-y-auto max-h-screen">
         <SheetHeader>
           <SheetTitle className="text-lg sm:text-xl">
-            Cadastrar Indicador
+            {t("sheet.title")}
           </SheetTitle>
           <SheetDescription className="text-sm sm:text-base">
-            Preencha os campos abaixo para cadastrar um novo indicador
+            {t("sheet.description")}
           </SheetDescription>
         </SheetHeader>
 
@@ -124,11 +127,12 @@ export function IndicatorSheet({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="indicator" className="text-sm font-medium">
-                Indicador <span className="text-red-500">*</span>
+                {t("sheet.indicator")}{" "}
+                <span className="text-red-500">{t("sheet.required")}</span>
               </Label>
               <Input
                 id="indicator"
-                placeholder="Digite o nome do indicador..."
+                placeholder={t("sheet.placeholder.indicator")}
                 value={formData.indicator}
                 onChange={(e) =>
                   setFormData({ ...formData, indicator: e.target.value })
@@ -140,11 +144,12 @@ export function IndicatorSheet({
 
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium">
-                Descrição <span className="text-red-500">*</span>
+                {t("sheet.indicatorDescription")}{" "}
+                <span className="text-red-500">{t("sheet.required")}</span>
               </Label>
               <Textarea
                 id="description"
-                placeholder="Digite a descrição do indicador..."
+                placeholder={t("sheet.placeholder.description")}
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
@@ -157,7 +162,8 @@ export function IndicatorSheet({
 
             <div className="space-y-2">
               <Label htmlFor="category" className="text-sm font-medium">
-                Categoria do Indicador <span className="text-red-500">*</span>
+                {t("sheet.category")}{" "}
+                <span className="text-red-500">{t("sheet.required")}</span>
               </Label>
               <Select
                 value={formData.fatherIndicator}
@@ -167,7 +173,7 @@ export function IndicatorSheet({
                 required
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione a categoria" />
+                  <SelectValue placeholder={t("sheet.placeholder.category")} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
@@ -181,12 +187,13 @@ export function IndicatorSheet({
 
             <div className="space-y-2">
               <Label htmlFor="formula" className="text-sm font-medium">
-                Fórmula <span className="text-red-500">*</span>
+                {t("sheet.formula")}{" "}
+                <span className="text-red-500">{t("sheet.required")}</span>
               </Label>
               <div className="relative">
                 <Textarea
                   id="formula"
-                  placeholder="Busque indicadores, digite números e operadores (+ - * / % = () ^2 ^3)..."
+                  placeholder={t("sheet.placeholder.formula")}
                   value={formData.formula}
                   onChange={(e) =>
                     setFormData({ ...formData, formula: e.target.value })
@@ -196,7 +203,7 @@ export function IndicatorSheet({
                 />
                 <div className="mt-2 p-3 bg-gray-50 rounded-md border">
                   <p className="text-sm text-gray-600 break-words">
-                    {formData.formula || "Sua fórmula aparecerá aqui"}
+                    {formData.formula || t("sheet.placeholder.formulaPreview")}
                   </p>
                 </div>
               </div>
@@ -204,7 +211,8 @@ export function IndicatorSheet({
 
             <div className="space-y-2">
               <Label htmlFor="viewAs" className="text-sm font-medium">
-                Visualizar como: <span className="text-red-500">*</span>
+                {t("sheet.viewAs")}{" "}
+                <span className="text-red-500">{t("sheet.required")}</span>
               </Label>
               <Select
                 value={formData.viewAs}
@@ -214,7 +222,7 @@ export function IndicatorSheet({
                 required
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione o tipo" />
+                  <SelectValue placeholder={t("sheet.placeholder.viewAs")} />
                 </SelectTrigger>
                 <SelectContent>
                   {visualizationTypes.map((type) => (
@@ -233,13 +241,13 @@ export function IndicatorSheet({
                 onClick={handleCancel}
                 className="w-full sm:w-auto order-2 sm:order-1"
               >
-                Cancelar
+                {t("sheet.cancel")}
               </Button>
               <Button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto order-1 sm:order-2"
               >
-                Salvar
+                {t("sheet.save")}
               </Button>
             </div>
           </form>
